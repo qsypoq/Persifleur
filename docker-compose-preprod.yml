@@ -1,0 +1,42 @@
+version: '3.1'
+
+services:
+
+  persifleur:
+    image: registry.magnier.io/qsypoq/persifleur:latest
+    restart: always
+    ports:
+      - 1338:1337
+    environment:
+      VIRTUAL_HOST: cicdprep.magnier.io
+      VIRTUAL_PORT: 1338
+      LETSENCRYPT_HOST: cicdprep.magnier.io
+      LETSENCRYPT_EMAIL: adam@magnier.io
+      REGISTRAR: namecheap
+      EXTERNAL_IP: 152.228.170.93
+    volumes:
+      - ./sources:/usr/src/app/sources
+      - ./html:/usr/src/app/html
+      - ./assets:/usr/src/app/assets
+      - ~/.ssh:/root/.ssh
+
+  httpd:
+    image: httpd:latest
+    restart: always
+    ports:
+      - 4443:80
+    environment:
+      VIRTUAL_HOST: preprod.magnier.io
+      VIRTUAL_PORT: 4443
+      LETSENCRYPT_HOST: preprod.magnier.io
+      LETSENCRYPT_EMAIL: adam@magnier.io
+      REGISTRAR: namecheap
+      EXTERNAL_IP: 152.228.170.93
+    volumes:
+      - ./html:/usr/local/apache2/htdocs/
+      - ./httpd.conf:/usr/local/apache2/conf/httpd.conf
+
+networks:
+   default:
+     external:
+       name: nginx-proxy
